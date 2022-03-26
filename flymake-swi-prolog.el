@@ -1,14 +1,14 @@
 ;;; flymake-swi-prolog.el --- A Flymake backend for SWI-Prolog -*- lexical-binding: t; -*-
 
-;;; Version: 0.1.0
+;; Version: 0.1.0
+;; Author: Eshel Yaron
+;; URL: https://git.sr.ht/~eshel/flymake-swi-prolog
 
-;;; Author: Eshel Yaron
-
-;;; Package-Requires: ((emacs "26.0"))
+;;; Package-Requires: ((emacs "26.1"))
 
 ;;; Commentary:
 
-;;; License: MIT
+;; Provides a Flymake backend for SWI-Prolog source code.
 
 ;;; Code:
 
@@ -86,7 +86,7 @@ as documented in 'flymake-diagnostic-functions'"
 
 (defun flymake-swi-prolog-setup-backend ()
   "Setup routine for the SWI-Prolog Flymake checker."
-  (add-hook 'flymake-diagnostic-functions 'flymake-swi-prolog--checker nil t))
+  (add-hook 'flymake-diagnostic-functions #'flymake-swi-prolog--checker nil t))
 
 (add-hook 'prolog-mode-hook 'flymake-swi-prolog-setup-backend)
 
