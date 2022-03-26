@@ -6,20 +6,28 @@ Flymake backend for SWI-Prolog using [diagnostics.pl](https://git.sr.ht/~eshel/d
 
 ## Perquisites
 
-Install SWI-Prolog, then install the `diagnostics` package:
+Install SWI-Prolog, e.g. from [here](https://www.swi-prolog.org/Download.html).
+
+## Installation
+
+Load `flymake-swi-prolog.el` into Emacs and add the following forms to your configuration:
+```lisp
+(require 'flymake-swi-prolog)
+(add-hook 'prolog-mode-hook #'flymake-swi-prolog-setup-backend)
+```
+
+Install the required Prolog `diagnostics` package with either:
+```lisp
+M-x flymake-swi-prolog-ensure-backend
+```
+
+or run from the command line:
 
 ```sh
 $ swipl -g "pack_install(diagnostics)" -t halt
 ```
 
-## Installation
-
-Load `flymake-swi-prolog.el` into Emacs and `require` it:
-```lisp
-(require 'flymake-swi-prolog)
-```
-
-## Installation
+## Usage
 
 Just open a file in `prolog-mode` and you should be ready to go.
 
