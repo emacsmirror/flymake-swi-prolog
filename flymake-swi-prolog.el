@@ -1,6 +1,6 @@
 ;;; flymake-swi-prolog.el --- A Flymake backend for SWI-Prolog -*- lexical-binding: t; -*-
 
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Author: Eshel Yaron
 ;; URL: https://git.sr.ht/~eshel/flymake-swi-prolog
 
@@ -110,12 +110,12 @@ as documented in 'flymake-diagnostic-functions'"
   (add-hook 'flymake-diagnostic-functions #'flymake-swi-prolog--checker nil t))
 
 
-(defun flymake-swi-prolog-ensure-backend ()
+(defun flymake-swi-prolog-ensure-diagnostics-pl ()
   "Install the underlying SWI-Prolog diagnostics package, if not already installed."
   (interactive)
   (make-process
-   :name "flymake-swi-prolog-install-diagnostics-pl" :noquery t :connection-type 'pipe
-   :buffer (generate-new-buffer "*flymake-swi-prolog-install-diagnostics-pl*")
+   :name "flymake-swi-prolog-ensure-diagnostics-pl" :noquery t :connection-type 'pipe
+   :buffer (generate-new-buffer "*flymake-swi-prolog-ensure-diagnostics-pl*")
    :command (list flymake-swi-prolog-executable-name "-q"
                   "-g" "pack_install(diagnostics, [interactive(false)])"
                   "-t" "halt")))
