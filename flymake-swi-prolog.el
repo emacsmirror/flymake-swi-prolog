@@ -1,6 +1,6 @@
 ;;; flymake-swi-prolog.el --- A Flymake backend for SWI-Prolog -*- lexical-binding: t; -*-
 
-;; Version: 0.1.3
+;; Version: 0.2.0
 ;; Author: Eshel Yaron
 ;; URL: https://git.sr.ht/~eshel/flymake-swi-prolog
 
@@ -34,8 +34,6 @@
 ;;; Code:
 
 
-;; our own customization group
-
 (require 'flymake)
 
 
@@ -45,14 +43,32 @@
   :prefix "flymake-swi-prolog-")
 
 
-;; useful variables
-
-
 (defcustom flymake-swi-prolog-executable-name "swipl"
   "Name of executable to run when checker is called.
 Must be present in variable `exec-path'."
   :type 'string
   :group 'flymake-swi-prolog)
+
+
+(defun flymake-swi-prolog--output-filter (report-fn output offset)
+  "Filter function for handling and reporting diagnostics.
+REPORT-FN is a function called to report diagnostics to the user
+with Flymake.  OUTPUT is a string holding the diagnostics process
+output.  OFFSET is an integer denoting the offset into OUTPUT
+from which to start scanning for diagnotic messages."
+  (let ((new-offset (string-match "^\\(.+\\):[[:space:]]+\\(.+\.pl\\):\\([0-9]+\\):\\([0-9]+\\):[[:space:]]+\\(.*\\)$"
+                                  output
+                                  offset)))
+    (if new-offset
+        (let* ((line-prefix (match-string 1 output))
+               (locus       (find-buffer-visiting (match-string 2 output)))
+               (beg         (+ 1   (string-to-number (match-string 3 output))))
+               (end         (+ beg (string-to-number (match-string 4 output))))
+               (text        (match-string 5 output))
+               (type        (if (string-match "^Warning.*" line-prefix) :warning :error)))
+          (funcall report-fn (list (flymake-make-diagnostic locus beg end type text)))
+          (flymake-swi-prolog--output-filter report-fn output (+ 1 new-offset)))
+      t)))
 
 
 (defvar-local flymake-swi-prolog--proc nil)
@@ -64,45 +80,20 @@ REPORT-FN is the reporting function passed to backend by Flymake,
 as documented in 'flymake-diagnostic-functions'"
   (when (process-live-p flymake-swi-prolog--proc)
     (kill-process flymake-swi-prolog--proc))
-  (let ((source (current-buffer)))
-    (save-restriction
-      (widen)
-      (setq
-       flymake-swi-prolog--proc
-       (make-process
-        :name "flymake-swi-prolog" :noquery t :connection-type 'pipe
-        :buffer (generate-new-buffer "*flymake-swi-prolog*")
-        :command (list flymake-swi-prolog-executable-name "-q"
-                       "-g" "use_module(library(diagnostics))"
-                       "-t" "halt" "--" "-" buffer-file-name)
-        :sentinel
-        (lambda (proc _event)
-          (when (eq 'exit (process-status proc))
-            (unwind-protect
-                (if (with-current-buffer source (eq proc flymake-swi-prolog--proc))
-                    (with-current-buffer (process-buffer proc)
-                      (goto-char (point-min))
-                      (cl-loop
-                       while (search-forward-regexp
-                              "^\\(.*.pl\\):\\([0-9]+\\):\\([0-9]+\\): \\(.*\\)$"
-                              nil t)
-                       for msg = (match-string 4)
-                       for beg = (+ (string-to-number (match-string 2)) 1)
-                       for end = (+ (string-to-number (match-string 3)) beg)
-                       for type = (if (string-match "^Warning.*" (match-string 1))
-                                      :warning
-                                    :error)
-                       collect (flymake-make-diagnostic source
-                                                        beg
-                                                        end
-                                                        type
-                                                        msg)
-                       into diags
-                       finally (funcall report-fn diags)))
-                  (flymake-log :warning "Canceling obsolete check %s"  proc))
-              (kill-buffer (process-buffer proc)))))))
-      (process-send-region flymake-swi-prolog--proc (point-min) (point-max))
-      (process-send-eof flymake-swi-prolog--proc))))
+  (save-restriction
+    (widen)
+    (setq
+     flymake-swi-prolog--proc
+     (make-process
+      :name "flymake-swi-prolog" :noquery t :connection-type 'pipe
+      :command (list flymake-swi-prolog-executable-name "-q"
+                     "-g" "use_module(library(diagnostics))"
+                     "-t" "halt" "--" "-" buffer-file-name)
+      :filter
+      (lambda (_proc output)
+        (flymake-swi-prolog--output-filter report-fn output nil))))
+    (process-send-region flymake-swi-prolog--proc (point-min) (point-max))
+    (process-send-eof flymake-swi-prolog--proc)))
 
 
 (defun flymake-swi-prolog-setup-backend ()
