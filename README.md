@@ -10,7 +10,31 @@ Install SWI-Prolog, e.g. from [here](https://www.swi-prolog.org/Download.html).
 
 ## Installation
 
-Load `flymake-swi-prolog.el` into Emacs and add the following forms to your configuration:
+### From package archive
+
+To install from MELPA, simply type:
+
+    M-x package-install RET flymake-swi-prolog RET
+
+
+### From Git repository
+
+Clone the [source repository](https://git.sr.ht/~eshel/flymake-swi-prolog) to a direcory of your choice:
+```sh
+$ cd ~/.emacs.d/checkouts/
+$ git clone https://git.sr.ht/~eshel/flymake-swi-prolog
+```
+
+Then add the root of the newly cloned repository to the `load-path` in Emacs with e.g.:
+```lisp
+;;; init.el
+(add-to-list 'load-path "~/.emacs.d/checkouts/flymake-swi-prolog")
+```
+
+## Setup
+
+Add `flymake-swi-prolog` to your `init.el` and hook it to
+be used automatically in `prolog-mode` buffers:
 ```lisp
 (require 'flymake-swi-prolog)
 (add-hook 'prolog-mode-hook #'flymake-swi-prolog-setup-backend)

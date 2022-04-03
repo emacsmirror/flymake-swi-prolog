@@ -1,8 +1,9 @@
 ;;; flymake-swi-prolog.el --- A Flymake backend for SWI-Prolog -*- lexical-binding: t; -*-
 
-;; Version: 0.2.0
+;; Version: 0.2.1
 ;; Author: Eshel Yaron
 ;; URL: https://git.sr.ht/~eshel/flymake-swi-prolog
+;; Keywords: languages
 
 ;; Copyright 2022 Eshel Yaron
 
@@ -61,12 +62,14 @@ from which to start scanning for diagnotic messages."
                                   offset)))
     (if new-offset
         (let* ((line-prefix (match-string 1 output))
-               (locus       (find-buffer-visiting (match-string 2 output)))
+               (path        (match-string 2 output))
+               (locus       (or (find-buffer-visiting path) path))
                (beg         (+ 1   (string-to-number (match-string 3 output))))
                (end         (+ beg (string-to-number (match-string 4 output))))
                (text        (match-string 5 output))
                (type        (if (string-match "^Warning.*" line-prefix) :warning :error)))
-          (funcall report-fn (list (flymake-make-diagnostic locus beg end type text)))
+          (when locus
+            (funcall report-fn (list (flymake-make-diagnostic locus beg end type text))))
           (flymake-swi-prolog--output-filter report-fn output (+ 1 new-offset)))
       t)))
 
