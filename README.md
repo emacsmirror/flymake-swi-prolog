@@ -1,5 +1,7 @@
 # flymake-swi-prolog
 
+[![MELPA](https://melpa.org/packages/flymake-swi-prolog-badge.svg)](https://melpa.org/#/flymake-swi-prolog)
+
 Flymake backend for SWI-Prolog using [diagnostics.pl](https://git.sr.ht/~eshel/diagnostics.pl)
 
 ![diagnostics](./flymake-swi-prolog.png)
