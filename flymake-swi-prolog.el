@@ -1,6 +1,6 @@
 ;;; flymake-swi-prolog.el --- A Flymake backend for SWI-Prolog -*- lexical-binding: t; -*-
 
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Author: Eshel Yaron
 ;; URL: https://git.sr.ht/~eshel/flymake-swi-prolog
 ;; Keywords: languages
@@ -94,7 +94,10 @@ as documented in 'flymake-diagnostic-functions'"
                      "-t" "halt" "--" "-" buffer-file-name)
       :filter
       (lambda (_proc output)
-        (flymake-swi-prolog--output-filter report-fn output nil))))
+        (flymake-swi-prolog--output-filter report-fn output nil))
+      :sentinel
+      (lambda (_proc _event)
+        (funcall report-fn nil))))
     (process-send-region flymake-swi-prolog--proc (point-min) (point-max))
     (process-send-eof flymake-swi-prolog--proc)))
 
